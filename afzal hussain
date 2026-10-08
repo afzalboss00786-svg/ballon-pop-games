@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animal Alphabet Balloon Pop!</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body {
+            background: linear-gradient(to bottom, #87CEEB, #E0F6FF);
+            font-family: 'Comic Sans MS', 'Bubblegum Sans', cursive, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Header / Scoreboard */
+        header {
+            background: rgba(255, 255, 255, 0.9);
+            width: 100%;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            z-index: 10;
+        }
+
+        h1 {
+            color: #FF5722;
+            font-size: 24px;
+            text-shadow: 2px 2px #FFE082;
+        }
+
+        .stats {
+            display: flex;
+            gap: 20px;
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .stat-box {
+            background: #FFF9C4;
+            padding: 5px 15px;
+            border-radius: 20px;
+            border: 2px solid #FBC02D;
+        }
+
+        /* Game Play Area */
+        #game-container {
+            position: relative;
+            width: 100%;
+            flex-grow: 1;
+            overflow: hidden;
+        }
+
+        /* Balloon Styling */
+        .balloon {
+            position: absolute;
+            width: 75px;
+            height: 95px;
+            border-radius: 50% 50% 50% 50% / 40% 40% 60% 60%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            animation: floatUp linear infinite;
+            box-shadow: inset -8px -8px 0px rgba(0,0,0,0.15), 0 5px 15px rgba(0,0,0,0.2);
+            transition: transform 0.1s;
+        }
+
+        .balloon::after {
+            content: "";
+            position: absolute;
+            bottom: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-bottom: 12px solid inherit;
+        }
+
+        .balloon-string {
+            position: absolute;
+            bottom: -32px;
+            left: 50%;
+            width: 2px;
+            height: 20px;
+            background: #888;
+        }
+
+        .balloon-letter {
+            font-size: 32px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 2px 2px 2px rgba(0,0,0,0.3);
+        }
+
+        .balloon-animal {
+            font-size: 22px;
+            margin-top: -2px;
+        }
+
+        @keyframes floatUp {
+            0% {
+                bottom: -120px;
+            }
+            100% {
+                bottom: 105vh;
+            }
+        }
+
+        /* Footer / Hint Banner */
+        footer {
+            background: white;
+            width: 100%;
+            padding: 15px;
+            text-align: center;
+            font-size: 22px;
+            color: #3F51B5;
+            box-shadow: 0 -4px 15px rgba(0,0,0,0.1);
+            z-index: 10;
+            min-height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Pop Animation Effect */
+        .pop-effect {
+            transform: scale(1.4);
+            opacity: 0;
+            transition: transform 0.2s, opacity 0.2s;
+        }
+
+        /* Reset Button */
+        button.restart-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-family: inherit;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 3px 0 #388E3C;
+        }
+
+        button.restart-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 #388E3C;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>🎈 Balloon Pop!</h1>
+        <div class="stats">
+            <div class="stat-box">Score: <span id="score">0</span></div>
+            <button class="restart-btn" onclick="resetGame()">Reset</button>
+        </div>
+    </header>
+
+    <div id="game-container"></div>
+
+    <footer id="hint-banner">
+        Pop a balloon to learn the alphabet and animals! 🌟
+    </footer>
+
+    <script>
+        const animals = [
+            { letter: 'A', name: 'Apple / Ant', emoji: '🐜', color: '#FF5252' },
+            { letter: 'B', name: 'Ball / Bear', emoji: '🐻', color: '#FF7043' },
+            { letter: 'C', name: 'Cat', emoji: '🐱', color: '#FFA726' },
+            { letter: 'D', name: 'Dog', emoji: '🐶', color: '#AB47BC' },
+            { letter: 'E', name: 'Elephant', emoji: '🐘', color: '#5C6BC0' },
+            { letter: 'F', name: 'Fish', emoji: '🐠', color: '#29B6F6' },
+            { letter: 'G', name: 'Goat', emoji: '🐐', color: '#26A69A' },
+            { letter: 'H', name: 'Horse', emoji: '🐴', color: '#66BB6A' },
+            { letter: 'K', name: 'Kite / Kangaroo', emoji: '🦘', color: '#EC407A' },
+            { letter: 'L', name: 'Lion', emoji: '🦁', color: '#AB47BC' },
+            { letter: 'M', name: 'Monkey', emoji: '🐵', color: '#8D6E63' },
+            { letter: 'R', name: 'Rabbit', emoji: '🐰', color: '#7E57C2' },
+            { letter: 'T', name: 'Tiger', emoji: '🐯', color: '#FFA726' },
+            { letter: 'Z', name: 'Zebra', emoji: '🦓', color: '#78909C' }
+        ];
+
+        let score = 0;
+        let gameContainer = document.getElementById('game-container');
+        let scoreDisplay = document.getElementById('score');
+        let hintBanner = document.getElementById('hint-banner');
+
+        // Web Audio API Sound Generator
+        let audioCtx = null;
+        function playPopSound() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            let osc = audioCtx.createOscillator();
+            let gain = audioCtx.createGain();
+            
+            osc.type = 'sine';
+            // Quick pitch drop for a satisfying "pop" sound
+            osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.1);
+
+            gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.1);
+        }
+
+        function createBalloon() {
+            const balloon = document.createElement('div');
+            balloon.classList.add('balloon');
+
+            // Pick random animal/letter
+            const item = animals[Math.floor(Math.random() * animals.length)];
+            balloon.style.backgroundColor = item.color;
+            balloon.style.borderBottomColor = item.color; // matches string connection color
+
+            // Random horizontal position across screen
+            const randomX = Math.random() * (gameContainer.clientWidth - 90);
+            balloon.style.left = randomX + 'px';
+
+            // Random floating speed (between 4 to 8 seconds)
+            const randomDuration = Math.random() * 4 + 4;
+            balloon.style.animationDuration = randomDuration + 's';
+
+            balloon.innerHTML = `
+                <div class="balloon-letter">${item.letter}</div>
+                <div class="balloon-animal">${item.emoji}</div>
+                <div class="balloon-string"></div>
+            `;
+
+            // Pop interaction
+            balloon.addEventListener('pointerdown', (e) => {
+                e.preventDefault();
+                playPopSound();
+                score++;
+                scoreDisplay.textContent = score;
+                hintBanner.textContent = `${item.letter} is for ${item.name}! ${item.emoji}`;
+                
+                balloon.classList.add('pop-effect');
+                setTimeout(() => {
+                    balloon.remove();
+                }, 200);
+            });
+
+            // Remove balloon when it floats off screen
+            balloon.addEventListener('animationend', () => {
+                balloon.remove();
+            });
+
+            gameContainer.appendChild(boxCheck(balloon));
+        }
+
+        function boxCheck(el) {
+            return el;
+        }
+
+        // Spawn balloons continuously
+        let spawnInterval = setInterval(createBalloon, 900);
+
+        function resetGame() {
+            score = 0;
+            scoreDisplay.textContent = score;
+            hintBanner.textContent = "Game reset! Pop a balloon to start!";
+            document.querySelectorAll('.balloon').forEach(b => b.remove());
+        }
+    </script>
+</body>
+</html>
